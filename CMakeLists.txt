@@ -18,10 +18,16 @@ endif()
 target_include_directories(dquic PUBLIC
 	"${PROJECT_SOURCE_DIR}/include")
 
+set_target_properties(dquic PROPERTIES PUBLIC_HEADER include/dquic.h)
+
+install (TARGETS dquic)
+
 
 if (NOT NO_TESTING)
 	set(CMAKE_CXX_STANDARD 14)
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+	set(INSTALL_GTEST OFF)
 
 
 	include(FetchContent)
@@ -42,7 +48,7 @@ if (NOT NO_TESTING)
 		tests/quic_decrypt_test.cc
 	)
 	target_link_libraries(quic_test 
-		PUBLIC dquic
+		PRIVATE dquic
 		GTest::gtest_main
 	)
 

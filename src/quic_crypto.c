@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "quic.h"
+#include "dquic.h"
 #include "kdf/hkdf.h"
 #include "hash/sha256.h"
 #include "cipher/aes.h"
