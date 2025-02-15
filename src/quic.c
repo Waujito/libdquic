@@ -20,6 +20,7 @@
 #include "quic.h"
 
 #include <errno.h>
+#include <stdio.h>
 
 #if defined(_WIN32)
 	#include <winsocks2.h>
@@ -185,6 +186,78 @@ int quic_parse_initial_header(const uint8_t *inpayload, size_t inplen,
 	nqhdr.protected_payload = cur_ptr;
 	nqhdr.sample = cur_ptr + QUIC_SAMPLE_OFFSET;
 	nqhdr.sample_length = QUIC_SAMPLE_SIZE;
+
+	if (qhdr) *qhdr = nqhdr;
+
+	return 0;
+
+invalid_packet:
+	return -EINVAL;
+}
+
+int quic_parse_decrypted_initial_header(const uint8_t *quic_payload, 
+					size_t quic_plen,
+			struct quici_decrypted_hdr *qhdr) {
+	const uint8_t *inpayload;
+	size_t inplen;
+	const struct quic_lhdr *qch;
+	struct quici_lhdr_typespec quici_lhdr;
+
+	const uint8_t *raw_packet_number;
+	int packet_number_length;
+	uint32_t packet_number;
+	int ret;
+
+	ret = quic_parse_data(
+		quic_payload, quic_plen,
+		&qch, NULL, NULL,
+		&inpayload, &inplen);
+
+	if (ret < 0) {
+		goto invalid_packet;
+	}
+	quici_lhdr = (struct quici_lhdr_typespec){quic_payload[0]};
+
+	if (inplen < 3) goto invalid_packet;
+	struct quici_decrypted_hdr nqhdr = {0};
+
+	const uint8_t *cur_ptr = inpayload;
+	size_t left_len = inplen;
+	size_t tlen = left_len;
+
+	nqhdr.token_len = quic_parse_varlength(cur_ptr, &tlen);
+	nqhdr.token = cur_ptr + tlen;
+	
+	if (left_len < nqhdr.token_len + tlen) {
+		goto invalid_packet;
+	}
+	cur_ptr += tlen + nqhdr.token_len;
+	left_len -= tlen + nqhdr.token_len;
+
+	tlen = left_len;
+	nqhdr.length = quic_parse_varlength(cur_ptr, &tlen);
+
+	if (left_len < nqhdr.length + tlen ||
+		nqhdr.length < QUIC_SAMPLE_SIZE + 
+				QUIC_SAMPLE_OFFSET
+	) {
+		goto invalid_packet;
+	}
+	cur_ptr += tlen;
+
+	packet_number_length = quici_lhdr.number_length + 1;
+	raw_packet_number = cur_ptr;
+
+	packet_number = 0;
+	for (int i = 0; i < packet_number_length; i++) {
+		packet_number = (packet_number << 8) + raw_packet_number[i];
+	}
+	nqhdr.packet_number = packet_number;
+
+	cur_ptr += packet_number_length;
+
+	nqhdr.decrypted_message = cur_ptr;
+	nqhdr.decrypted_message_len = nqhdr.length - packet_number_length - QUIC_TAG_SIZE;
 
 	if (qhdr) *qhdr = nqhdr;
 

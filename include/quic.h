@@ -165,7 +165,8 @@ uint64_t quic_parse_varlength(const uint8_t *variable, size_t *mlen);
 // quici stands for QUIC Initial
 
 /**
- * This structure should be parsed
+ * This structure should be parsed. 
+ * Represents ENCRYPTED Initial header
  */
 struct quici_hdr {
 	size_t token_len;
@@ -177,6 +178,17 @@ struct quici_hdr {
 	// RFC 9001 5.4.2
 	size_t sample_length;
 	const uint8_t *sample;
+};
+
+struct quici_decrypted_hdr {
+	size_t token_len;
+	const uint8_t *token;
+	size_t length;
+
+	uint32_t packet_number;
+
+	const uint8_t *decrypted_message;
+	size_t decrypted_message_len;
 };
 
 /**
@@ -211,17 +223,25 @@ int quic_parse_initial_header(const uint8_t *inpayload, size_t inplen,
 			struct quici_hdr *qhdr);
 
 /**
+ * Parses decrypted QUIC initial message header.
+ * \quic_payload is udecrypted_payload (decrypted quic packet) 
+ */
+int quic_parse_decrypted_initial_header(const uint8_t *quic_payload, 
+					size_t quic_plen,
+			struct quici_decrypted_hdr *qhdr);
+
+/**
  * Parses and decrypts QUIC Initial Message. 
  *
  * \quic_header QUIC payload, the start of UDP payload
  * \udecrypted_payload QUIC decrypted payload. Contains all the QUIC packet, with all headers
- * \udecrypted_message QUIC decrypted message, typically TLS Client Hello
+ *
+ * udecrypted_payload MUST be freed.
  *
  */
 int quic_parse_initial_message(
 	const uint8_t *quic_payload, size_t quic_plen,
-	uint8_t **udecrypted_payload, size_t *udecrypted_payload_len,
-	const uint8_t **udecrypted_message, size_t *udecrypted_message_len
+	uint8_t **udecrypted_payload, size_t *udecrypted_payload_len
 );
 
 #ifdef __cplusplus

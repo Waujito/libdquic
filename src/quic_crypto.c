@@ -36,8 +36,7 @@ const uint8_t quic2_hp_info[]		= "\0\x10\x0ftls13 quicv2 hp\0";
 
 int quic_parse_initial_message(
 	const uint8_t *quic_payload, size_t quic_plen,
-	uint8_t **udecrypted_payload, size_t *udecrypted_payload_len,
-	const uint8_t **udecrypted_message, size_t *udecrypted_message_len
+	uint8_t **udecrypted_payload, size_t *udecrypted_payload_len
 ) {
 	int ret;
 	const struct quic_lhdr *qch;
@@ -240,8 +239,6 @@ int quic_parse_initial_message(
 		ret = -EINVAL;
 		goto error;
 	}
-	// TAG is padded in the end of decrypted message
-	decrypted_message_len = protected_payload_length - QUIC_TAG_SIZE;
 
 	if (!udecrypted_payload) {
 		ret = -EINVAL;
@@ -251,11 +248,7 @@ int quic_parse_initial_message(
 	*udecrypted_payload = decrypted_payload;
 	if (udecrypted_payload_len) 
 		*udecrypted_payload_len = decrypted_payload_len;
-	if (udecrypted_message) 
-		*udecrypted_message = decrypted_message;
-	if (udecrypted_message_len) 
-		*udecrypted_message_len = decrypted_message_len;
-
+	
 	return 0;
 error:
 	free(decrypted_payload);

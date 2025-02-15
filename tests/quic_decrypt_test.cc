@@ -25,29 +25,37 @@ TEST(QuicTest, Test_decrypts)
 	int ret;
 	uint8_t *decrypted_payload;
 	size_t decrypted_payload_len;
+	struct quici_decrypted_hdr qdchd;
 	const uint8_t *decrypted_message;
 	size_t decrypted_message_len;
 
 	ret = quic_parse_initial_message(
 		(const uint8_t *)quic_testing_payload, sizeof(quic_testing_payload) - 1,
-		&decrypted_payload, &decrypted_payload_len,
-		&decrypted_message, &decrypted_message_len
+		&decrypted_payload, &decrypted_payload_len
 	);
 
-	EXPECT_EQ(ret, 0);
+	ASSERT_EQ(ret, 0);
 
-	EXPECT_EQ(decrypted_payload_len, sizeof(quic_testing_payload) - 1);
+	ASSERT_EQ(decrypted_payload_len, sizeof(quic_testing_payload) - 1);
 	for (int i = 0; i < sizeof(quic_decrypted_header) - 1; i++) {
 		EXPECT_EQ(decrypted_payload[i], (uint8_t)quic_decrypted_header[i]) << "decrypted_payload with idx " << i;
 	}
-	EXPECT_EQ(decrypted_payload + sizeof(quic_decrypted_header) - 1, decrypted_message); 
+	
+	ret = quic_parse_decrypted_initial_header(decrypted_payload, decrypted_payload_len, &qdchd);
+	ASSERT_EQ(ret, 0);
+	EXPECT_EQ(qdchd.packet_number, 2);
+	decrypted_message = qdchd.decrypted_message;
+	decrypted_message_len = qdchd.decrypted_message_len;
+
+	ASSERT_EQ(decrypted_payload + sizeof(quic_decrypted_header) - 1, decrypted_message); 
 	for (int i = 0; i < sizeof(quic_decrypted_crypto) - 1; i++) {
 		EXPECT_EQ(decrypted_message[i], (uint8_t)quic_decrypted_crypto[i]) << "decrypted_payload with idx " << i;
 	}
 
+
 	const uint8_t *curptr = decrypted_message + (sizeof(quic_decrypted_crypto) - 1);
 	int curptr_len = decrypted_message_len - (sizeof(quic_decrypted_crypto) - 1);
-	EXPECT_EQ(curptr_len, quic_padding_len);
+	ASSERT_EQ(curptr_len, quic_padding_len);
 
 	while (curptr_len-- > 0) {
 		EXPECT_EQ(*curptr++, 0x00);
