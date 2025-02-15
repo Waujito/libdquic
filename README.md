@@ -24,3 +24,9 @@ Install with
 ```sh
 cmake --install build
 ```
+
+If you want to make a static library, cmake with
+```sh
+cmake -S . -Bbuild -DSTATIC_LIBRARY=1
+```
+After building find the library in build/libdquic.a

@@ -6,17 +6,33 @@ project(libdquic
 
 add_subdirectory(deps/cyclone_crypto)
 
-add_library(dquic SHARED src/quic.c src/quic_crypto.c)
 
-if (MSVC)
-	target_link_libraries(dquic PRIVATE cycloneCRYPTO)
+if (STATIC_LIBRARY)
+	add_library(dquic STATIC)
 else()
-	target_link_libraries(dquic PRIVATE -Wl,--exclude-libs,ALL cycloneCRYPTO)
+	add_library(dquic SHARED)
+endif()
+
+target_sources(dquic PRIVATE
+	src/quic.c src/quic_crypto.c
+	$<TARGET_OBJECTS:cycloneCRYPTO>
+	$<TARGET_OBJECTS:cycloneCommon>
+)
+
+if (NOT MSVC)
 	target_compile_options(dquic PRIVATE -fvisibility=hidden)
 endif()
 
-target_include_directories(dquic PUBLIC
-	"${PROJECT_SOURCE_DIR}/include")
+target_compile_options(dquic PRIVATE -fvisibility=hidden)
+
+target_include_directories(dquic 
+	PUBLIC
+	"${PROJECT_SOURCE_DIR}/include"
+	PRIVATE
+	"${PROJECT_SOURCE_DIR}/deps/cyclone_crypto"
+	"${PROJECT_SOURCE_DIR}/deps/cyclone_common"
+	"${PROJECT_SOURCE_DIR}/deps/cyclone_config"
+)
 
 set_target_properties(dquic PROPERTIES PUBLIC_HEADER include/dquic.h)
 

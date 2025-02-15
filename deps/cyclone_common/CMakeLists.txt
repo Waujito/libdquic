@@ -1,10 +1,5 @@
-add_library(cycloneCommon 
-	date_time.c
-	debug.c
-	str.c
+add_library(cycloneCommon STATIC
 	cpu_endian.c
-	resource_manager.c
-	path.c
 )
 
 if (UNIX)
@@ -27,4 +22,8 @@ target_sources(
 )
 endif()
 
-target_include_directories(cycloneCommon PUBLIC ${PROJECT_SOURCE_DIR}/deps/cyclone_common ${PROJECT_SOURCE_DIR}/deps/cyclone_config)
+target_include_directories(cycloneCommon PUBLIC 
+	${PROJECT_SOURCE_DIR}/deps/cyclone_common 
+	${PROJECT_SOURCE_DIR}/deps/cyclone_config
+)
+target_compile_options(cycloneCommon PRIVATE -fvisibility=hidden)
