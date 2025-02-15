@@ -18,15 +18,7 @@
 */
 
 #include "quic.h"
-
-#include <errno.h>
-#include <stdio.h>
-
-#if defined(_WIN32)
-	#include <winsocks2.h>
-#else
-	#include <arpa/inet.h>
-#endif
+#include "cpu_endian.h"
 
 
 /**

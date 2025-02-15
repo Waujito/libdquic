@@ -24,8 +24,7 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include "dquic_os_port.h"
 
 /**
 * @macro
@@ -92,6 +91,7 @@ static const uint32_t supported_versions[] = {
 /**
  * Describes type-specific bytes for Initial message
  */
+DQUIC_PACK__
 struct quici_lhdr_typespec {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 	uint8_t number_length:2;//protected
@@ -104,11 +104,13 @@ struct quici_lhdr_typespec {
 #else
 #error "Undefined endian"
 #endif
-}__attribute__((packed));
+}
+DQUIC__PACK;
 
 /**
  * Quic Large Header
  */
+DQUIC_PACK__
 struct quic_lhdr {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 	uint8_t type_specific:4;// protected
@@ -124,7 +126,8 @@ struct quic_lhdr {
 #error "Undefined endian"
 #endif
 	uint32_t version;
-}__attribute__((packed));
+}
+DQUIC__PACK;
 
 /**
  * Quic Large Header Ids 

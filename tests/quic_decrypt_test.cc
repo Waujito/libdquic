@@ -70,7 +70,7 @@ TEST(QuicTest, Test_decrypts)
 
 TEST(QuicTest, Test_crypto_parser_valid)
 {
-	ssize_t fret;
+	int fret;
 	struct quic_frame_crypto fr_cr;
 
 	fret = quic_parse_crypto(&fr_cr, (const uint8_t *)quic_decrypted_crypto, sizeof(quic_decrypted_crypto));
@@ -84,7 +84,7 @@ TEST(QuicTest, Test_crypto_parser_valid)
 
 TEST(QuicTest, Test_crypto_parser_invalid)
 {
-	ssize_t fret;
+	int fret;
 	struct quic_frame_crypto fr_cr;
 
 	fret = quic_parse_crypto(&fr_cr, NULL, 0);

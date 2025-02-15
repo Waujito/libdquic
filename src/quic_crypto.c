@@ -24,8 +24,6 @@
 #include "cipher_modes/ecb.h"
 #include "aead/gcm.h"
 
-#include <errno.h>
-
 const uint8_t quic_client_in_info[]	= "\0\x20\x0ftls13 client in\0";
 const uint8_t quic_key_info[]		= "\0\x10\x0etls13 quic key\0";
 const uint8_t quic_iv_info[]		= "\0\x0c\x0dtls13 quic iv\0";
