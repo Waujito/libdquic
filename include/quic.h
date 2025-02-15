@@ -24,27 +24,36 @@
 extern "C" {
 #endif
 
-#include "dquic_os_port.h"
+#include <stdint.h>	// IWYU pragma: export
+#include <string.h>	// IWYU pragma: export
+#include <stdint.h>	// IWYU pragma: export
+#include <errno.h>	// IWYU pragma: export
+#include <stdio.h>	// IWYU pragma: export
 
-/**
-* @macro
-*
-* :macro:`NGTCP2_INITIAL_SALT_V1` is a salt value which is used to
-* derive initial secret.  It is used for QUIC v1.
-*/
-#define QUIC_INITIAL_SALT_V1 \
- "\x38\x76\x2c\xf7\xf5\x59\x34\xb3\x4d\x17\x9a\xe6\xa4\xc8\x0c\xad" \
- "\xcc\xbb\x7f\x0a"
+#ifdef _MSC_VER
+	#define DQUIC_PACK__ __pragma( pack(push, 1) ) 
+	#define DQUIC__PACK __pragma( pack(pop))
+#else 
+	#define DQUIC_PACK__
+	#define DQUIC__PACK __attribute__((__packed__))
+#endif
 
-/**
-* @macro
-*
-* :macro:`NGTCP2_INITIAL_SALT_V2` is a salt value which is used to
-* derive initial secret.  It is used for QUIC v2.
-*/
-#define QUIC_INITIAL_SALT_V2 \
- "\x0d\xed\xe3\xde\xf7\x00\xa6\xdb\x81\x93\x81\xbe\x6e\x26\x9d\xcb" \
- "\xf9\xbd\x2e\xd9"
+#if defined _WIN32 || defined __CYGWIN__
+	#ifdef __GNUC__
+		#define DQUIC_EXPORTED __attribute__ ((dllexport))
+	#else
+		#define DQUIC_EXPORTED __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
+	#endif
+	#define DQUIC_NOT_EXPORTED
+#else
+	#if __GNUC__ >= 4
+		#define DQUIC_EXPORTED __attribute__ ((visibility ("default")))
+		#define DQUIC_NOT_EXPORTED  __attribute__ ((visibility ("hidden")))
+	#else
+		#define DQUIC_EXPORTED
+		#define DQUIC_NOT_EXPORTED
+	#endif
+#endif
 
 #define QUIC_INITIAL_TYPE	0
 #define QUIC_0_RTT_TYPE		1
@@ -147,7 +156,7 @@ struct quic_cids {
  * \qch_len is sizeof(qch) + qci->dst_len + qci->src_id
  * \payload is Type-Specific payload (#17.2).
  */
-int quic_parse_data(const uint8_t *raw_payload, size_t raw_payload_len,
+DQUIC_EXPORTED int quic_parse_data(const uint8_t *raw_payload, size_t raw_payload_len,
 		const struct quic_lhdr **qch, size_t *qch_len,
 		struct quic_cids *qci,
 		const uint8_t **payload, size_t *plen);
@@ -163,7 +172,7 @@ int quic_parse_data(const uint8_t *raw_payload, size_t raw_payload_len,
  *
  * On error/buffer overflow mlen set to 0, otherwise it is higher
  */
-uint64_t quic_parse_varlength(const uint8_t *variable, size_t *mlen);
+DQUIC_EXPORTED uint64_t quic_parse_varlength(const uint8_t *variable, size_t *mlen);
 
 // quici stands for QUIC Initial
 
@@ -197,13 +206,13 @@ struct quici_decrypted_hdr {
 /**
  * Checks for quic version and checks if it is supported
  */
-int quic_get_version(uint32_t *version, const struct quic_lhdr *qch);
+DQUIC_EXPORTED int quic_get_version(uint32_t *version, const struct quic_lhdr *qch);
 
 /**
 * Checks quic message to be initial according to version. 
 * 0 on false, 1 on true
 */
-int quic_check_is_initial(const struct quic_lhdr *qch);
+DQUIC_EXPORTED int quic_check_is_initial(const struct quic_lhdr *qch);
 
 struct quic_frame_crypto {
 	size_t offset;
@@ -214,7 +223,7 @@ struct quic_frame_crypto {
  * Parses quic crypto frame
  * Returns parsed size or -EINVAL on error
  */
-int quic_parse_crypto(struct quic_frame_crypto *crypto_frame,
+DQUIC_EXPORTED int quic_parse_crypto(struct quic_frame_crypto *crypto_frame,
 			  const uint8_t *frame, size_t flen);
 
 
@@ -222,14 +231,14 @@ int quic_parse_crypto(struct quic_frame_crypto *crypto_frame,
  * Parses QUIC initial message header.
  * \inpayload is a QUIC Initial message payload (payload after quic large header)
  */
-int quic_parse_initial_header(const uint8_t *inpayload, size_t inplen,
+DQUIC_EXPORTED int quic_parse_initial_header(const uint8_t *inpayload, size_t inplen,
 			struct quici_hdr *qhdr);
 
 /**
  * Parses decrypted QUIC initial message header.
  * \quic_payload is udecrypted_payload (decrypted quic packet) 
  */
-int quic_parse_decrypted_initial_header(const uint8_t *quic_payload, 
+DQUIC_EXPORTED int quic_parse_decrypted_initial_header(const uint8_t *quic_payload, 
 					size_t quic_plen,
 			struct quici_decrypted_hdr *qhdr);
 
@@ -242,7 +251,7 @@ int quic_parse_decrypted_initial_header(const uint8_t *quic_payload,
  * udecrypted_payload MUST be freed.
  *
  */
-int quic_parse_initial_message(
+DQUIC_EXPORTED int quic_parse_initial_message(
 	const uint8_t *quic_payload, size_t quic_plen,
 	uint8_t **udecrypted_payload, size_t *udecrypted_payload_len
 );

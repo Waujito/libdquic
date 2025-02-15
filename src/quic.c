@@ -31,7 +31,7 @@ struct quic_pnumber {
 	uint8_t d4;
 };
 
-uint64_t quic_parse_varlength(const uint8_t *variable, size_t *mlen) {
+DQUIC_EXPORTED uint64_t quic_parse_varlength(const uint8_t *variable, size_t *mlen) {
 	if (mlen && *mlen == 0) return 0;
 	uint64_t vr = (*variable & 0x3F);
 	uint8_t len = 1 << (*variable >> 6);
@@ -53,7 +53,7 @@ uint64_t quic_parse_varlength(const uint8_t *variable, size_t *mlen) {
 	return vr;
 }
 
-int quic_get_version(uint32_t *version, const struct quic_lhdr *qch) {
+DQUIC_EXPORTED int quic_get_version(uint32_t *version, const struct quic_lhdr *qch) {
 	uint32_t qversion = ntohl(qch->version);
 	*version = qversion;
 
@@ -66,7 +66,7 @@ int quic_get_version(uint32_t *version, const struct quic_lhdr *qch) {
 	}
 }
 
-int quic_check_is_initial(const struct quic_lhdr *qch) {
+DQUIC_EXPORTED int quic_check_is_initial(const struct quic_lhdr *qch) {
 	uint32_t qversion;
 	int ret;
 	ret = quic_get_version(&qversion, qch);
@@ -92,7 +92,7 @@ int quic_check_is_initial(const struct quic_lhdr *qch) {
 	return 1;
 }
 
-int quic_parse_data(const uint8_t *raw_payload, size_t raw_payload_len,
+DQUIC_EXPORTED int quic_parse_data(const uint8_t *raw_payload, size_t raw_payload_len,
 		const struct quic_lhdr **qch, size_t *qch_len,
 		struct quic_cids *qci,
 		const uint8_t **payload, size_t *plen) {
@@ -148,7 +148,7 @@ invalid_packet:
 	return -EINVAL;
 }
 
-int quic_parse_initial_header(const uint8_t *inpayload, size_t inplen,
+DQUIC_EXPORTED int quic_parse_initial_header(const uint8_t *inpayload, size_t inplen,
 			struct quici_hdr *qhdr) {
 	if (inplen < 3) goto invalid_packet;
 	struct quici_hdr nqhdr;
@@ -187,7 +187,7 @@ invalid_packet:
 	return -EINVAL;
 }
 
-int quic_parse_decrypted_initial_header(const uint8_t *quic_payload, 
+DQUIC_EXPORTED int quic_parse_decrypted_initial_header(const uint8_t *quic_payload, 
 					size_t quic_plen,
 			struct quici_decrypted_hdr *qhdr) {
 	const uint8_t *inpayload;
@@ -259,7 +259,7 @@ invalid_packet:
 	return -EINVAL;
 }
 
-int quic_parse_crypto(struct quic_frame_crypto *crypto_frame,
+DQUIC_EXPORTED int quic_parse_crypto(struct quic_frame_crypto *crypto_frame,
 			  const uint8_t *frame, size_t flen) {
 	const uint8_t *curptr = frame;
 	size_t curptr_len = flen;

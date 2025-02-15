@@ -32,7 +32,10 @@ const uint8_t quic2_key_info[]		= "\0\x10\x10tls13 quicv2 key\0";
 const uint8_t quic2_iv_info[]		= "\0\x0c\x0ftls13 quicv2 iv\0";
 const uint8_t quic2_hp_info[]		= "\0\x10\x0ftls13 quicv2 hp\0";
 
-int quic_parse_initial_message(
+const uint8_t quic_initial_salt[]	= "\x38\x76\x2c\xf7\xf5\x59\x34\xb3\x4d\x17\x9a\xe6\xa4\xc8\x0c\xad\xcc\xbb\x7f\x0a";
+const uint8_t quic2_initial_salt[]	= "\x0d\xed\xe3\xde\xf7\x00\xa6\xdb\x81\x93\x81\xbe\x6e\x26\x9d\xcb\xf9\xbd\x2e\xd9";
+
+DQUIC_EXPORTED int quic_parse_initial_message(
 	const uint8_t *quic_payload, size_t quic_plen,
 	uint8_t **udecrypted_payload, size_t *udecrypted_payload_len
 ) {
@@ -100,8 +103,8 @@ int quic_parse_initial_message(
 			key_info_size = sizeof(quic_key_info) - 1;
 			hp_info = quic_hp_info;
 			hp_info_size = sizeof(quic_hp_info) - 1;
-			initial_salt = (const uint8_t *)QUIC_INITIAL_SALT_V1;
-			initial_salt_size = sizeof(QUIC_INITIAL_SALT_V1) - 1;
+			initial_salt = quic_initial_salt;
+			initial_salt_size = sizeof(quic_initial_salt) - 1;
 			break;
 		case QUIC_V2:
 			iv_info = quic2_iv_info;
@@ -110,8 +113,8 @@ int quic_parse_initial_message(
 			key_info_size = sizeof(quic2_key_info) - 1;
 			hp_info = quic2_hp_info;
 			hp_info_size = sizeof(quic2_hp_info) - 1;
-			initial_salt = (const uint8_t *)QUIC_INITIAL_SALT_V2;
-			initial_salt_size = sizeof(QUIC_INITIAL_SALT_V2) - 1;
+			initial_salt = quic2_initial_salt;
+			initial_salt_size = sizeof(quic2_initial_salt) - 1;
 			break;
 		default:
 			return -EINVAL;
